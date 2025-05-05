@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: photoarchival
+  profiles:
+    active: local
+  cloud:
+    aws:
+      s3:
+        region: ${AWS_REGION}
+        bucket: ${BUCKET_NAME}
+      credentials:
+        access-key: ${AWS_ACCESS_KEY_ID}
+        secret-key: ${AWS_SECRET_ACCESS_KEY}
+
+  data:
+    mongodb:
+      database: ${MONGODB_DATABASE}
+      host: ${MONGODB_HOST}
+      port: ${MONGODB_PORT}
+      username: ${MONGODB_USERNAME}
+      password: ${MONGODB_PASSWORD}
+      authentication-database: ${MONGODB_AUTHENTICATION_DATABASE}
+
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB

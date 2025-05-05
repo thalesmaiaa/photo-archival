@@ -1,0 +1,30 @@
+services:
+  localstack:
+    image: localstack/localstack
+    hostname: localstack
+    ports:
+      - "127.0.0.1:4566:4566"            # LocalStack Gateway
+    environment:
+      - SKIP_SSL_CERT_DOWNLOAD=1
+      - SERVICES=s3,lambda,kms,iam,logs
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - AWS_DEFAULT_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=ANUJDEKAVADIYAEXAMPLE
+      - AWS_SECRET_ACCESS_KEY=2QvM4/Tdmf38SkcD/qalvXO4EXAMPLEKEY
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+  mongodb:
+    image: mongo
+    container_name: mongo-container
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+
+
+volumes:
+  mongo-data:

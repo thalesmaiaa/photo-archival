@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: photoarchival
+  cloud:
+    aws:
+      s3:
+        region: us-east-1
+        bucket: bucket
+      credentials:
+        access-key: ANUJDEKAVADIYAEXAMPLE
+        secret-key: 2QvM4/Tdmf38SkcD/qalvXO4EXAMPLEKEY
+      endpoint:
+        uri: http://localhost:4566
+
+  data:
+    mongodb:
+      database: photoarchival
+      host: localhost
+      port: 27017
+      username: root
+      password: example
+      authentication-database: admin
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
