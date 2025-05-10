@@ -43,7 +43,7 @@ photos based on various attributes.
 - The project uses an AWS Lambda function to process updates triggered by S3 events.
   Ensure your AWS credentials and S3 bucket configurations are properly set up.
 - Mongo DB is used for storing photo metadata and attributes.
-  Make sure to configure the MongoDB connection settings in the `application.properties` file.
+  Make sure to configure the MongoDB connection settings in the `application.yml` file.
 - The application uses AWS SDK for Java to interact with S3 and Lambda services.
   Ensure you have the necessary permissions set up in your AWS IAM roles.
 
