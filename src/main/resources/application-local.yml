@@ -7,8 +7,8 @@ spring:
         region: us-east-1
         bucket: bucket
       credentials:
-        access-key: ANUJDEKAVADIYAEXAMPLE
-        secret-key: 2QvM4/Tdmf38SkcD/qalvXO4EXAMPLEKEY
+        access-key: ANUJDEKAVADIYAEXAMPLE   # localstack credentials
+        secret-key: 2QvM4/Tdmf38SkcD/qalvXO4EXAMPLEKEY # localstack credentials
       endpoint:
         uri: http://localhost:4566
 

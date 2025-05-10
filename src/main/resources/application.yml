@@ -8,10 +8,6 @@ spring:
       s3:
         region: ${AWS_REGION}
         bucket: ${BUCKET_NAME}
-      credentials:
-        access-key: ${AWS_ACCESS_KEY_ID}
-        secret-key: ${AWS_SECRET_ACCESS_KEY}
-
   data:
     mongodb:
       database: ${MONGODB_DATABASE}
