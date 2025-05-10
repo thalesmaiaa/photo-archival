@@ -1,8 +1,8 @@
-package com.br.photoarchival.domain.model;
+package com.br.photoarchival.dto.response;
 
 import java.util.List;
 
-public record MetadataModel(List<MetadataLabel> labels, List<MetadataFace> faces) {
+public record MetadataResponse(List<MetadataLabel> labels, List<MetadataFace> faces) {
 
     public record MetadataLabel(String name, Double confidence, List<String> categories) {
     }

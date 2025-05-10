@@ -2,6 +2,8 @@ package com.br.photoarchival.service;
 
 import com.br.photoarchival.domain.entity.MediaEntity;
 import com.br.photoarchival.domain.model.MediaModel;
+import com.br.photoarchival.domain.model.MetadataModel;
+import com.br.photoarchival.dto.request.MediaFiltersRequest;
 import com.br.photoarchival.exception.InvalidFileException;
 import com.br.photoarchival.repository.MediaRepository;
 import org.assertj.core.api.Assertions;
@@ -11,25 +13,30 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.test.util.ReflectionTestUtils;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
-import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Base64;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class MediaServiceTest {
+
+    @Mock
+    private MongoTemplate mongoTemplate;
 
     @Mock
     private S3Client s3Client;
@@ -40,57 +47,9 @@ class MediaServiceTest {
     @InjectMocks
     private MediaService mediaService;
 
-    private static String BUCKET_NAME = "test-bucket";
-
     @BeforeEach
     void setUp() {
-        BUCKET_NAME = "test-bucket";
-        ReflectionTestUtils.setField(mediaService, "bucketName", BUCKET_NAME);
-    }
-
-    @Test
-    void shouldCreateFolder() {
-        var folderName = "test-folder";
-
-        var listObjectsRequest = ListObjectsV2Request.builder()
-                .bucket(BUCKET_NAME)
-                .prefix(folderName + "/")
-                .delimiter("/")
-                .build();
-
-        var folderObject = PutObjectRequest.builder()
-                .bucket(BUCKET_NAME)
-                .key(folderName + "/")
-                .build();
-
-        when(s3Client.listObjectsV2(listObjectsRequest)).thenReturn(ListObjectsV2Response.builder().build());
-        when(s3Client.putObject(eq(folderObject), any(RequestBody.class))).thenReturn(null);
-
-        mediaService.createFolder(folderName);
-
-        verify(s3Client).listObjectsV2(any(ListObjectsV2Request.class));
-        verify(s3Client).putObject(eq(folderObject), any(RequestBody.class));
-    }
-
-    @Test
-    void shouldTryToCreateExistingFolder() {
-        var folderName = "test-folder/";
-
-        var listObjectsRequest = ListObjectsV2Request.builder()
-                .bucket(BUCKET_NAME)
-                .prefix(folderName)
-                .delimiter("/")
-                .build();
-
-        when(s3Client.listObjectsV2(listObjectsRequest)).thenReturn(ListObjectsV2Response.builder().contents(
-                software.amazon.awssdk.services.s3.model.S3Object.builder()
-                        .key(folderName)
-                        .build()).build());
-
-        mediaService.createFolder(folderName);
-
-        verify(s3Client).listObjectsV2(any(ListObjectsV2Request.class));
-        verify(s3Client, times(0)).putObject(any(PutObjectRequest.class), any(RequestBody.class));
+        ReflectionTestUtils.setField(mediaService, "bucketName", "test-bucket");
     }
 
     @Test
@@ -122,7 +81,7 @@ class MediaServiceTest {
 
     @Test
     void shouldFindById() {
-        var mediaId = UUID.randomUUID();
+        var mediaId = UUID.randomUUID().toString();
         var mediaEntity = new MediaEntity();
 
         when(mediaRepository.findById(mediaId)).thenReturn(Optional.of(mediaEntity));
@@ -131,5 +90,68 @@ class MediaServiceTest {
 
         Assertions.assertThat(mediaEntity).isEqualTo(result);
         verify(mediaRepository).findById(mediaId);
+    }
+
+    @Test
+    void shouldUpdateMediaMetadata() {
+        var mediaEntity = new MediaEntity();
+        var metadataModel = new MetadataModel(List.of(), List.of());
+        var mediaModel = new MediaModel("test-folder", "test", "data:text/txt;base64,encodedContent");
+
+        when(mediaRepository.findByFileNameAndFolderName(mediaModel.fileName(), mediaModel.folderName())).thenReturn(Optional.of(mediaEntity));
+
+        mediaService.updateMediaMetadata(mediaModel, metadataModel);
+
+        verify(mediaRepository).findByFileNameAndFolderName(mediaModel.fileName(), mediaModel.folderName());
+        verify(mediaRepository).save(mediaEntity);
+    }
+
+    @Test
+    void shouldReturnAllMediasWhenFiltersAreNull() {
+        var pageable = PageRequest.of(0, 10);
+        var mediaPage = new PageImpl<>(List.of(new MediaEntity()));
+
+        when(mediaRepository.findAll(pageable)).thenReturn(mediaPage);
+
+        var result = mediaService.findAllMedias(null, pageable);
+
+        Assertions.assertThat(result).isNotNull();
+        Assertions.assertThat(result.getContent()).hasSize(1);
+        verify(mediaRepository).findAll(pageable);
+        verifyNoInteractions(mongoTemplate);
+    }
+
+    @Test
+    void shouldReturnAllMediasWhenCriteriaListIsEmpty() {
+        var filters = new MediaFiltersRequest(null, null, null, null, null);
+        var pageable = PageRequest.of(0, 10);
+        var mediaPage = new PageImpl<>(List.of(new MediaEntity()));
+
+        when(mediaRepository.findAll(pageable)).thenReturn(mediaPage);
+
+        var result = mediaService.findAllMedias(filters, pageable);
+
+        Assertions.assertThat(result).isNotNull();
+        Assertions.assertThat(result.getContent()).hasSize(1);
+        verify(mediaRepository).findAll(pageable);
+        verifyNoInteractions(mongoTemplate);
+    }
+
+    @Test
+    void shouldReturnFilteredMediasWhenCriteriaListIsNotEmpty() {
+        var filters = new MediaFiltersRequest("fileName", "folderName", null, null, null);
+        var pageable = PageRequest.of(0, 10);
+        var mediaList = List.of(new MediaEntity());
+
+        when(mongoTemplate.find(any(Query.class), eq(MediaEntity.class))).thenReturn(mediaList);
+        when(mongoTemplate.count(any(Query.class), eq(MediaEntity.class))).thenReturn(1L);
+
+        var result = mediaService.findAllMedias(filters, pageable);
+
+        Assertions.assertThat(result.getTotalElements()).isEqualTo(1);
+        Assertions.assertThat(result).isNotNull();
+        Assertions.assertThat(result.getContent()).hasSize(1);
+        verify(mongoTemplate).find(any(Query.class), eq(MediaEntity.class));
+        verifyNoInteractions(mediaRepository);
     }
 }

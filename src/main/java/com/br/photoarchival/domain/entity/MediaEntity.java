@@ -1,11 +1,10 @@
 package com.br.photoarchival.domain.entity;
 
+import com.br.photoarchival.domain.model.MetadataModel;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
-import java.util.List;
 
 @Document(collection = "medias")
 public class MediaEntity {
@@ -21,8 +20,9 @@ public class MediaEntity {
 
     private Date uploadedAt;
 
-    @Transient
-    private List<MetadataEntity> metadata;
+    private Date metadataUpdatedAt;
+
+    private MetadataModel metadata;
 
     public MediaEntity(String folderName, String fileName, String url) {
         this.folderName = folderName;
@@ -31,11 +31,6 @@ public class MediaEntity {
     }
 
     public MediaEntity() {
-    }
-
-
-    public String getId() {
-        return id;
     }
 
     public String getUrl() {
@@ -70,11 +65,20 @@ public class MediaEntity {
         this.uploadedAt = uploadedAt;
     }
 
-    public List<MetadataEntity> getMetadata() {
+    public MetadataModel getMetadata() {
         return metadata;
     }
 
-    public void setMetadata(List<MetadataEntity> metadata) {
+    public void setMetadata(MetadataModel metadata) {
         this.metadata = metadata;
     }
+
+    public Date getMetadataUpdatedAt() {
+        return metadataUpdatedAt;
+    }
+
+    public void setMetadataUpdatedAt(Date metadataUpdatedAt) {
+        this.metadataUpdatedAt = metadataUpdatedAt;
+    }
+
 }

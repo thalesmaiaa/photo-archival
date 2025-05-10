@@ -1,5 +1,6 @@
 package com.br.photoarchival.utils;
 
+import com.br.photoarchival.domain.model.MediaModel;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -36,6 +37,14 @@ class FileUtilsTest {
         var invalidDataUri = "base64";
         var actualBytes = FileUtils.decodeBase64FromDataUri(invalidDataUri);
         Assertions.assertThat(actualBytes).isEmpty();
+    }
+
+    @Test
+    void shouldExtractMediaModelFromPathName() {
+        var filePath = "folder-file-png";
+        var expectedMediaModel = new MediaModel("folder", "file.png", null);
+        var actualMediaModel = FileUtils.extractMediaModelFromPathName(filePath);
+        Assertions.assertThat(expectedMediaModel).isEqualTo(actualMediaModel);
     }
 
 }

@@ -1,25 +1,28 @@
 package com.br.photoarchival.service;
 
 import com.br.photoarchival.domain.entity.MediaEntity;
-import com.br.photoarchival.domain.entity.MetadataEntity;
+import com.br.photoarchival.domain.model.MediaFilters;
 import com.br.photoarchival.domain.model.MediaModel;
+import com.br.photoarchival.domain.model.MetadataModel;
+import com.br.photoarchival.dto.request.MediaFiltersRequest;
 import com.br.photoarchival.exception.InvalidFileException;
 import com.br.photoarchival.exception.MediaNotFoundException;
 import com.br.photoarchival.repository.MediaRepository;
-import com.br.photoarchival.repository.MetadataRepository;
 import com.br.photoarchival.utils.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.nio.file.Paths;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class MediaService {
@@ -27,32 +30,21 @@ public class MediaService {
     private final String region;
     private final S3Client s3Client;
     private final String bucketName;
+    private final MongoTemplate mongoTemplate;
     private final MediaRepository mediaRepository;
-    private final MetadataRepository metadataRepository;
 
     private static final String S3_BASE_URL = "https://%s.s3.%s.amazonaws.com/%s";
 
     public MediaService(S3Client s3Client,
+                        MongoTemplate mongoTemplate,
                         MediaRepository mediaRepository,
-                        MetadataRepository metadataRepository,
-                        @Value("${spring.cloud.aws.s3.bucket}") String bucketName,
-                        @Value("${spring.cloud.aws.s3.region}") String region) {
-        this.s3Client = s3Client;
+                        @Value("${spring.cloud.aws.s3.region}") String region,
+                        @Value("${spring.cloud.aws.s3.bucket}") String bucketName) {
         this.region = region;
+        this.s3Client = s3Client;
         this.bucketName = bucketName;
+        this.mongoTemplate = mongoTemplate;
         this.mediaRepository = mediaRepository;
-        this.metadataRepository = metadataRepository;
-    }
-
-    public void createFolder(String folderName) {
-        if (!folderName.endsWith("/")) folderName += "/";
-
-        if (!folderExists(folderName)) {
-            s3Client.putObject(PutObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(folderName)
-                    .build(), RequestBody.empty());
-        }
     }
 
     public void uploadFile(MediaModel mediaModel) {
@@ -80,35 +72,48 @@ public class MediaService {
     }
 
     public MediaEntity findById(String id) {
-        var media = mediaRepository.findById(id).orElseThrow(MediaNotFoundException::new);
-        var metadata = metadataRepository.findAllByMediaId(media.getId());
-        media.setMetadata(metadata);
-        return media;
+        return mediaRepository.findById(id).orElseThrow(MediaNotFoundException::new);
     }
 
-    public void updateMediaMetadata(String file, List<MetadataEntity> mappedMetadata) {
-        var folderDelimiter = file.lastIndexOf("/");
-        var folder = file.substring(0, folderDelimiter);
-        var fileName = file.substring(folderDelimiter + 1);
-        var media = mediaRepository.findByFileNameAndFolderName(fileName, folder);
-        if (media.isEmpty()) return;
-        var currentMedia = media.get();
-        var mediaId = currentMedia.getId();
+    public Page<MediaEntity> findAllMedias(MediaFiltersRequest filters, Pageable pageable) {
+        if (Objects.isNull(filters)) return mediaRepository.findAll(pageable);
 
-        mappedMetadata.forEach(m -> m.setMediaId(mediaId));
-
-        metadataRepository.deleteAllByMediaId(mediaId);
-        metadataRepository.saveAll(mappedMetadata);
+        var criteriaList = buildMetadataCriteriaList(filters);
+        if (criteriaList.isEmpty()) {
+            return mediaRepository.findAll(pageable);
+        }
+        var combinedCriteria = new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
+        var query = new Query(combinedCriteria).with(pageable);
+        var mediaList = mongoTemplate.find(query, MediaEntity.class);
+        var total = mongoTemplate.count(query.skip(-1).limit(-1), MediaEntity.class);
+        return PageableExecutionUtils.getPage(mediaList, pageable, () -> total);
     }
 
-    private Boolean folderExists(String folderName) {
-        var listObjectsRequest = ListObjectsV2Request.builder()
-                .bucket(bucketName)
-                .prefix(folderName)
-                .delimiter("/")
-                .build();
+    public void updateMediaMetadata(MediaModel mediaModel, MetadataModel metadata) {
+        var media = mediaRepository.findByFileNameAndFolderName(mediaModel.fileName(), mediaModel.folderName());
+        media.ifPresent(m -> {
+            m.setMetadata(metadata);
+            m.setMetadataUpdatedAt(new Date());
+            mediaRepository.save(m);
+        });
+    }
 
-        var listObjectsResponse = s3Client.listObjectsV2(listObjectsRequest);
-        return !listObjectsResponse.contents().isEmpty();
+    private List<Criteria> buildMetadataCriteriaList(MediaFiltersRequest filters) {
+        var criteriaList = new ArrayList<Criteria>();
+
+        var entries = new HashMap<>(Map.ofEntries());
+        entries.put(MediaFilters.FILE_NAME.getFilterKey(), filters.fileName());
+        entries.put(MediaFilters.FOLDER_NAME.getFilterKey(), filters.folderName());
+        entries.put(MediaFilters.CATEGORY.getFilterKey(), filters.category());
+        entries.put(MediaFilters.DOMINANT_EMOTION.getFilterKey(), filters.dominantEmotion());
+
+        entries.forEach((key, filterValue) -> {
+            if (Objects.nonNull(filterValue)) {
+                var criteria = Criteria.where((String) key).is(filterValue);
+                criteriaList.add(criteria);
+            }
+        });
+
+        return criteriaList;
     }
 }
