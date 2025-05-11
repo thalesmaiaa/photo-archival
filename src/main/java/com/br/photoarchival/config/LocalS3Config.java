@@ -3,19 +3,21 @@ package com.br.photoarchival.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import software.amazon.awssdk.auth.credentials.InstanceProfileCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 
-@Profile("!local")
+import java.net.URI;
+
+@Profile("local")
 @Configuration
-public class S3Config {
+public class LocalS3Config {
 
     @Bean
     public S3Client s3Client() {
         return S3Client.builder()
                 .region(Region.US_EAST_1)
-                .credentialsProvider(InstanceProfileCredentialsProvider.create())
+                .endpointOverride(URI.create("http://localhost:4566"))
+                .forcePathStyle(true)
                 .build();
     }
 }

@@ -38,7 +38,7 @@ class GlobalExceptionHandlerTest {
     void shouldHandleMethodArgumentNotValid() {
         var bindingResult = new BeanPropertyBindingResult(null, "objectName");
         var exception = new MethodArgumentNotValidException(null, bindingResult);
-        var response = globalExceptionHandler.handleMethodArgumentNotValid(exception, null, null, null);
+        var response = globalExceptionHandler.handleMethodArgumentNotValid(exception);
         Assertions.assertThat(response).isNotNull();
         var exceptionResponse = (ExceptionResponse) response.getBody();
         Assertions.assertThat(exceptionResponse).isNotNull();
@@ -49,7 +49,7 @@ class GlobalExceptionHandlerTest {
     @Test
     void shouldHandleHttpMessageNotReadable() {
         var exception = new HttpMessageConversionException("Invalid request");
-        var response = globalExceptionHandler.handleHttpMessageNotReadable(exception, null, null, null);
+        var response = globalExceptionHandler.handleHttpMessageNotReadable(exception);
         Assertions.assertThat(response).isNotNull();
         var exceptionResponse = (ExceptionResponse) response.getBody();
         Assertions.assertThat(exceptionResponse).isNotNull();
@@ -61,7 +61,7 @@ class GlobalExceptionHandlerTest {
     void handleAwsException() {
         var exception = S3Exception.builder().message("S3 exception occurred")
                 .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value()).build();
-        var response = globalExceptionHandler.handleS3Exceptions(exception);
+        var response = globalExceptionHandler.handleAWSExceptions(exception);
         Assertions.assertThat(response).isNotNull();
         var exceptionResponse = (ExceptionResponse) response.getBody();
         Assertions.assertThat(exceptionResponse).isNotNull();

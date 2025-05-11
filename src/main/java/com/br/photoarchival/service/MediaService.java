@@ -1,6 +1,7 @@
 package com.br.photoarchival.service;
 
 import com.br.photoarchival.domain.entity.MediaEntity;
+import com.br.photoarchival.domain.model.ImageTypes;
 import com.br.photoarchival.domain.model.MediaFilters;
 import com.br.photoarchival.domain.model.MediaModel;
 import com.br.photoarchival.domain.model.MetadataModel;
@@ -19,6 +20,7 @@ import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetUrlRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.nio.file.Paths;
@@ -27,20 +29,15 @@ import java.util.*;
 @Service
 public class MediaService {
 
-    private final String region;
     private final S3Client s3Client;
     private final String bucketName;
     private final MongoTemplate mongoTemplate;
     private final MediaRepository mediaRepository;
 
-    private static final String S3_BASE_URL = "https://%s.s3.%s.amazonaws.com/%s";
-
     public MediaService(S3Client s3Client,
                         MongoTemplate mongoTemplate,
                         MediaRepository mediaRepository,
-                        @Value("${spring.cloud.aws.s3.region}") String region,
-                        @Value("${spring.cloud.aws.s3.bucket}") String bucketName) {
-        this.region = region;
+                        @Value("${aws.bucket.name}") String bucketName) {
         this.s3Client = s3Client;
         this.bucketName = bucketName;
         this.mongoTemplate = mongoTemplate;
@@ -50,6 +47,7 @@ public class MediaService {
     public void uploadFile(MediaModel mediaModel) {
         var fileExtension = FileUtils.extractFileExtension(mediaModel.file());
         if (Objects.isNull(fileExtension)) throw new InvalidFileException();
+        var imageContentType = ImageTypes.fromMimeType(fileExtension);
 
         var fileName = mediaModel.fileName().concat(fileExtension);
         var media = mediaRepository.findByFileNameAndFolderName(fileName, mediaModel.folderName())
@@ -59,10 +57,15 @@ public class MediaService {
         s3Client.putObject(PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(filePath)
+                .contentType(imageContentType.getMimeType())
                 .build(), RequestBody.fromBytes(FileUtils.decodeBase64FromDataUri(mediaModel.file())));
 
+        var request = GetUrlRequest.builder()
+                .bucket(bucketName)
+                .key(filePath)
+                .build();
 
-        var fileUrl = S3_BASE_URL.formatted(bucketName, region, filePath);
+        var fileUrl = s3Client.utilities().getUrl(request).toString();
 
         media.setFileName(fileName);
         media.setFolderName(mediaModel.folderName());

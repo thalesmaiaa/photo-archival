@@ -1,14 +1,11 @@
 package com.br.photoarchival.exception;
 
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import software.amazon.awssdk.awscore.exception.AwsServiceException;
 
@@ -30,8 +27,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exceptionResponse);
     }
 
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers,
-                                                                  HttpStatusCode status, WebRequest request) {
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
         var message = ex.getFieldErrors().stream()
                 .map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage()).toList();
         var exception = new ExceptionResponse(ExceptionMessage.INVALID_REQUEST.name(), message);
@@ -39,15 +35,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
 
-    public ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageConversionException ex, HttpHeaders headers,
-                                                               HttpStatusCode status, WebRequest request) {
+    public ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageConversionException ex) {
         var message = ex.getMessage().split(":")[0];
         var exception = new ExceptionResponse(ExceptionMessage.INVALID_REQUEST.name(), List.of(message));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception);
     }
 
     @ExceptionHandler(AwsServiceException.class)
-    public ResponseEntity<Object> handleS3Exceptions(AwsServiceException exception) {
+    public ResponseEntity<Object> handleAWSExceptions(AwsServiceException exception) {
         var details = Optional.of(List.of(exception.getMessage())).orElse(List.of());
         var exceptionResponse = new ExceptionResponse(ExceptionMessage.AWS_EXCEPTION.name(), details);
         return ResponseEntity.status(exception.statusCode()).body(exceptionResponse);
