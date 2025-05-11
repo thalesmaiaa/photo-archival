@@ -20,9 +20,12 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.test.util.ReflectionTestUtils;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3Utilities;
+import software.amazon.awssdk.services.s3.model.GetUrlRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.util.Base64;
 import java.util.List;
@@ -54,15 +57,19 @@ class MediaServiceTest {
 
     @Test
     void shouldUploadFile() throws IOException {
-        var filePath = "src/test/resources/test.txt";
+        var filePath = "src/test/resources/test.jpg";
         var fileContent = Files.readString(java.nio.file.Path.of(filePath));
-        var encodedContent = "data:text/txt;base64," + Base64.getEncoder().encodeToString(fileContent.getBytes());
+        var encodedContent = "data:text/jpg;base64," + Base64.getEncoder().encodeToString(fileContent.getBytes());
+        var mockedUtilities = mock(S3Utilities.class);
+        var mockedUrl = URI.create("https://test-bucket.s3.amazonaws.com/test-folder/test.jpg").toURL();
 
         var mediaModel = new MediaModel("test-folder", "test", encodedContent);
         var mediaEntity = new MediaEntity();
 
-        when(mediaRepository.findByFileNameAndFolderName(mediaModel.fileName() + ".txt", mediaModel.folderName())).thenReturn(Optional.of(mediaEntity));
+        when(mediaRepository.findByFileNameAndFolderName(mediaModel.fileName() + ".jpg", mediaModel.folderName())).thenReturn(Optional.of(mediaEntity));
         when(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class))).thenReturn(null);
+        when(s3Client.utilities()).thenReturn(mockedUtilities);
+        when(mockedUtilities.getUrl(any(GetUrlRequest.class))).thenReturn(mockedUrl);
 
         mediaService.uploadFile(mediaModel);
 
@@ -96,7 +103,7 @@ class MediaServiceTest {
     void shouldUpdateMediaMetadata() {
         var mediaEntity = new MediaEntity();
         var metadataModel = new MetadataModel(List.of(), List.of());
-        var mediaModel = new MediaModel("test-folder", "test", "data:text/txt;base64,encodedContent");
+        var mediaModel = new MediaModel("test-folder", "test", "data:text/jpg;base64,encodedContent");
 
         when(mediaRepository.findByFileNameAndFolderName(mediaModel.fileName(), mediaModel.folderName())).thenReturn(Optional.of(mediaEntity));
 
