@@ -71,7 +71,8 @@ class MediaControllerTest {
 
     @Test
     void shouldFindAllMedias() {
-        var filtersRequest = new MediaFiltersRequest(null, null, null, null, null);
+        var filtersRequest = new MediaFiltersRequest(null, null, null, null,
+                null, null, null, null, null);
         var pageable = Mockito.mock(Pageable.class);
         var mediaEntity = new MediaEntity("folder", "fileName", "file");
         mediaEntity.setMetadata(new MetadataModel(List.of(MetadataDTOFactory.buildMetadataLabelModel()),

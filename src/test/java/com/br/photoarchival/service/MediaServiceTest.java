@@ -119,8 +119,8 @@ class MediaServiceTest {
         var mediaPage = new PageImpl<>(List.of(new MediaEntity()));
 
         when(mediaRepository.findAll(pageable)).thenReturn(mediaPage);
-
-        var result = mediaService.findAllMedias(null, pageable);
+        var filters = buildEmptyFilters();
+        var result = mediaService.findAllMedias(filters, pageable);
 
         Assertions.assertThat(result).isNotNull();
         Assertions.assertThat(result.getContent()).hasSize(1);
@@ -130,7 +130,7 @@ class MediaServiceTest {
 
     @Test
     void shouldReturnAllMediasWhenCriteriaListIsEmpty() {
-        var filters = new MediaFiltersRequest(null, null, null, null, null);
+        var filters = buildEmptyFilters();
         var pageable = PageRequest.of(0, 10);
         var mediaPage = new PageImpl<>(List.of(new MediaEntity()));
 
@@ -146,7 +146,8 @@ class MediaServiceTest {
 
     @Test
     void shouldReturnFilteredMediasWhenCriteriaListIsNotEmpty() {
-        var filters = new MediaFiltersRequest("fileName", "folderName", null, null, null);
+        var filters = new MediaFiltersRequest("fileName", "folderName", null,
+                null, null, true, null, null, null);
         var pageable = PageRequest.of(0, 10);
         var mediaList = List.of(new MediaEntity());
 
@@ -160,5 +161,10 @@ class MediaServiceTest {
         Assertions.assertThat(result.getContent()).hasSize(1);
         verify(mongoTemplate).find(any(Query.class), eq(MediaEntity.class));
         verifyNoInteractions(mediaRepository);
+    }
+
+    private MediaFiltersRequest buildEmptyFilters() {
+        return new MediaFiltersRequest(null, null, null, null,
+                null, null, null, null, null);
     }
 }

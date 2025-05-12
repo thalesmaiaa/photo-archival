@@ -79,8 +79,6 @@ public class MediaService {
     }
 
     public Page<MediaEntity> findAllMedias(MediaFiltersRequest filters, Pageable pageable) {
-        if (Objects.isNull(filters)) return mediaRepository.findAll(pageable);
-
         var criteriaList = buildMetadataCriteriaList(filters);
         if (criteriaList.isEmpty()) {
             return mediaRepository.findAll(pageable);
@@ -104,19 +102,39 @@ public class MediaService {
     private List<Criteria> buildMetadataCriteriaList(MediaFiltersRequest filters) {
         var criteriaList = new ArrayList<Criteria>();
 
-        var entries = new HashMap<>(Map.ofEntries());
-        entries.put(MediaFilters.FILE_NAME.getFilterKey(), filters.fileName());
-        entries.put(MediaFilters.FOLDER_NAME.getFilterKey(), filters.folderName());
-        entries.put(MediaFilters.CATEGORY.getFilterKey(), filters.category());
-        entries.put(MediaFilters.DOMINANT_EMOTION.getFilterKey(), filters.dominantEmotion());
+        var filtersMap = mountFilters(filters);
 
-        entries.forEach((key, filterValue) -> {
+        if (filtersMap.values().stream().allMatch(Objects::isNull)) {
+            return criteriaList;
+        }
+
+        filtersMap.forEach((key, filterValue) -> {
             if (Objects.nonNull(filterValue)) {
-                var criteria = Criteria.where((String) key).is(filterValue);
+                var mediaFilter = MediaFilters.valueOf(key.toString());
+                var filterKey = mediaFilter.getFilterKey();
+                var filterType = mediaFilter.getFilterType();
+
+                var criteria = filterType.equals(Boolean.class)
+                        ? Criteria.where(filterKey).is(filterValue)
+                        : Criteria.where(filterKey).regex(filterValue.toString(), "i");
+
                 criteriaList.add(criteria);
             }
         });
 
         return criteriaList;
+    }
+
+    private static HashMap<Object, Object> mountFilters(MediaFiltersRequest filters) {
+        var entries = new HashMap<>(Map.ofEntries());
+        entries.put(MediaFilters.FILE_NAME, filters.fileName());
+        entries.put(MediaFilters.FOLDER_NAME, filters.folderName());
+        entries.put(MediaFilters.CATEGORY, filters.category());
+        entries.put(MediaFilters.DOMINANT_EMOTION, filters.dominantEmotion());
+        entries.put(MediaFilters.MUSTACHE, filters.mustache());
+        entries.put(MediaFilters.BEARD, filters.beard());
+        entries.put(MediaFilters.LABEL_NAME, filters.labelName());
+        entries.put(MediaFilters.SMILE, filters.smile());
+        return entries;
     }
 }
