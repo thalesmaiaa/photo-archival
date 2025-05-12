@@ -10,13 +10,6 @@ spring:
       password: ${MONGODB_PASSWORD}
       authentication-database: ${MONGODB_AUTHENTICATION_DATABASE}
 
-  jpa:
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-    hibernate:
-      ddl-auto: update
-
   servlet:
     multipart:
       enabled: true
