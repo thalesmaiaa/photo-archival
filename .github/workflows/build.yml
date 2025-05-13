@@ -34,18 +34,21 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Load AWS secrets
-        run: echo "$(aws secretsmanager get-secret-value --secret-id ${{ secrets.AWS_SECRET_ID }} --query SecretString --output text)" > aws_secrets.json && echo "AWS_SECRETS=$(cat aws_secrets.json)" >> $GITHUB_ENV
+        run: aws secretsmanager get-secret-value --secret-id ${{ secrets.AWS_SECRET_ID }} --query SecretString --output text > aws_secrets.json
 
-      #      - name: Set environment variables
-      #        run: |
-      #          echo "MONGODB_DATABASE=$(jq -r '.MONGODB_DATABASE' aws_secrets.json)" >> $GITHUB_ENV
-      #          echo "MONGODB_HOST=$(jq -r '.MONGODB_HOST' aws_secrets.json)" >> $GITHUB_ENV
-      #          echo "MONGODB_PORT=$(jq -r '.MONGODB_PORT' aws_secrets.json)" >> $GITHUB_ENV
-      #          echo "MONGODB_USERNAME=$(jq -r '.MONGODB_USERNAME' aws_secrets.json)" >> $GITHUB_ENV
-      #          echo "MONGODB_PASSWORD=$(jq -r '.MONGODB_PASSWORD' aws_secrets.json)" >> $GITHUB_ENV
-      #          echo "MONGODB_AUTHENTICATION_DATABASE=$(jq -r '.MONGODB_AUTHENTICATION_DATABASE' aws_secrets.json)" >> $GITHUB_ENV
-      #          echo "AWS_BUCKET_NAME=$(jq -r '.AWS_BUCKET_NAME' aws_secrets.json)" >> $GITHUB_ENV
-      #          echo "AWS_REGION=$(jq -r '.AWS_REGION' aws_secrets.json)" >> $GITHUB_ENV
+      - name: Set environment variables
+        run: |
+          echo "MONGODB_DATABASE=$(jq -r '.MONGODB_DATABASE' aws_secrets.json)" >> $GITHUB_ENV
+          echo "MONGODB_HOST=$(jq -r '.MONGODB_HOST' aws_secrets.json)" >> $GITHUB_ENV
+          echo "MONGODB_PORT=$(jq -r '.MONGODB_PORT' aws_secrets.json)" >> $GITHUB_ENV
+          echo "MONGODB_USERNAME=$(jq -r '.MONGODB_USERNAME' aws_secrets.json)" >> $GITHUB_ENV
+          echo "MONGODB_PASSWORD=$(jq -r '.MONGODB_PASSWORD' aws_secrets.json)" >> $GITHUB_ENV
+          echo "MONGODB_AUTHENTICATION_DATABASE=$(jq -r '.MONGODB_AUTHENTICATION_DATABASE' aws_secrets.json)" >> $GITHUB_ENV
+          echo "AWS_BUCKET_NAME=$(jq -r '.AWS_BUCKET_NAME' aws_secrets.json)" >> $GITHUB_ENV
+          echo "AWS_REGION=$(jq -r '.AWS_REGION' aws_secrets.json)" >> $GITHUB_ENV
+
+      - name: Log github env
+        run: cat $GITHUB_ENV
 
       - name: ECR login
         run: aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
