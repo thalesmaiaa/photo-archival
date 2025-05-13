@@ -38,6 +38,7 @@ jobs:
 
       - name: Set environment variables
         run: |
+          echo "::add-mask::$(jq -r '.MONGODB_PASSWORD' aws_secrets.json)"
           echo "MONGODB_DATABASE=$(jq -r '.MONGODB_DATABASE' aws_secrets.json)" >> $GITHUB_ENV
           echo "MONGODB_HOST=$(jq -r '.MONGODB_HOST' aws_secrets.json)" >> $GITHUB_ENV
           echo "MONGODB_PORT=$(jq -r '.MONGODB_PORT' aws_secrets.json)" >> $GITHUB_ENV
@@ -52,6 +53,14 @@ jobs:
 
       - name: Build Docker image
         run: docker build -t photo-archival .
+        env:
+          MONGODB_DATABASE: ${{ secrets.MONGODB_DATABASE }}
+          MONGODB_HOST: ${{ secrets.MONGODB_HOST }}
+          MONGODB_PORT: ${{ secrets.MONGODB_PORT }}
+          MONGODB_USERNAME: ${{ secrets.MONGODB_USERNAME }}
+          MONGODB_PASSWORD: ${{ secrets.MONGODB_PASSWORD }}
+          MONGODB_AUTHENTICATION_DATABASE: ${{ secrets.MONGODB_AUTHENTICATION_DATABASE }}
+          AWS_BUCKET_NAME: ${{ secrets.AWS_BUCKET_NAME }}
 
       - name: Tag Docker image
         run: docker tag ${{ secrets.ECR_REPOSITORY }}:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:latest
