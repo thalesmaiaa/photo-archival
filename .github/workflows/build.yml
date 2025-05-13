@@ -47,9 +47,6 @@ jobs:
           echo "AWS_BUCKET_NAME=$(jq -r '.AWS_BUCKET_NAME' aws_secrets.json)" >> $GITHUB_ENV
           echo "AWS_REGION=$(jq -r '.AWS_REGION' aws_secrets.json)" >> $GITHUB_ENV
 
-      - name: Log github env
-        run: cat $GITHUB_ENV
-
       - name: ECR login
         run: aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
 
