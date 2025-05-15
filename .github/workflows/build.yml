@@ -23,6 +23,7 @@ jobs:
           java-version: '21'
           distribution: 'corretto'
           cache: 'maven'
+          cache-dependency-path: '**/pom.xml, **/settings.xml'
 
       - name: Build with maven
         run: mvn clean install
@@ -34,8 +35,10 @@ jobs:
           role-session-name: GitHub_to_AWS_via_FederatedOIDC
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: ECR login
-        run: aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          mask-password: true
 
       - name: Build Docker image
         run: docker build -t photo-archival .
