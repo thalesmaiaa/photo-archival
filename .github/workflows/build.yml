@@ -23,7 +23,6 @@ jobs:
           java-version: '21'
           distribution: 'corretto'
           cache: 'maven'
-          cache-dependency-path: '**/pom.xml, **/settings.xml'
 
       - name: Build with maven
         run: mvn clean install
