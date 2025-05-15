@@ -1,0 +1,37 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure AWS CLI
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
+          role-session-name: GitHub_to_AWS_via_FederatedOIDC
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Generate temporary SSH key pair
+        run: ssh-keygen -t rsa -b 2048 -f temp_key -N ""
+
+      - name: Push SSH public key to EC2 via Instance Connect
+        run: |
+          aws ec2-instance-connect send-ssh-public-key \
+            --instance-id ${{ secrets.EC2_INSTANCE_ID }} \
+            --availability-zone ${{ secrets.EC2_AVAILABILITY_ZONE }} \
+            --instance-os-user ${{ secrets.EC2_USER }} \
+            --ssh-public-key file://temp_key.pub
+
+      - name: Run deploy.sh script remotely
+        run: |
+          ssh -o StrictHostKeyChecking=no -i temp_key ${{ secrets.EC2_USER }}@${{ secrets.EC2_PUBLIC_DNS }} "bash /home/ec2-user/deploy.sh"
