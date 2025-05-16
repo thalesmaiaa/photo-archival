@@ -47,28 +47,28 @@ public class MediaService {
     public void uploadFile(MediaModel mediaModel) {
         var fileExtension = FileUtils.extractFileExtension(mediaModel.file());
         if (Objects.isNull(fileExtension)) throw new InvalidFileException();
-        var imageContentType = ImageTypes.fromMimeType(fileExtension);
+        var imageContentType = ImageTypes.fromImageExtension(fileExtension);
 
         var fileName = mediaModel.fileName().concat(fileExtension);
-        var media = mediaRepository.findByFileNameAndFolderName(fileName, mediaModel.folderName())
-                .orElseGet(MediaEntity::new);
+        var folderName = mediaModel.folderName();
+        var media = mediaRepository.findByFileNameAndFolderName(fileName, folderName).orElseGet(MediaEntity::new);
 
-        var filePath = Paths.get(Optional.ofNullable(mediaModel.folderName()).orElse(""), fileName).toString();
+        var filePath = Paths.get(Optional.ofNullable(folderName).orElse(""), fileName).toString();
         s3Client.putObject(PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(filePath)
                 .contentType(imageContentType.getMimeType())
                 .build(), RequestBody.fromBytes(FileUtils.decodeBase64FromDataUri(mediaModel.file())));
 
-        var request = GetUrlRequest.builder()
+        var s3Url = GetUrlRequest.builder()
                 .bucket(bucketName)
                 .key(filePath)
                 .build();
 
-        var fileUrl = s3Client.utilities().getUrl(request).toString();
+        var fileUrl = s3Client.utilities().getUrl(s3Url).toString();
 
         media.setFileName(fileName);
-        media.setFolderName(mediaModel.folderName());
+        media.setFolderName(folderName);
         media.setUrl(fileUrl);
         media.setUploadedAt(new Date());
         mediaRepository.save(media);

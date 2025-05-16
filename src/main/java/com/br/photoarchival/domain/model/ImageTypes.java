@@ -15,7 +15,7 @@ public enum ImageTypes {
         return mimeType;
     }
 
-    public static ImageTypes fromMimeType(String mimeType) {
+    public static ImageTypes fromImageExtension(String mimeType) {
         var fileExtension = mimeType.replace(".", "");
         for (ImageTypes type : values()) {
             if (type.name().equalsIgnoreCase(fileExtension)) {

@@ -36,6 +36,7 @@ public class FileUtils {
         return new MediaModel(folderName, filePathSegments[fileNamePosition] + "." + fileExtension, null);
     }
 
+    // example URI: data:image/png;base64,iVBORw0KGgoANSUhEUgAA...
     private static String extractBase64FromDataUri(String uri) {
         var parts = uri.split(",", 2);
         return parts.length == 2 ? parts[1] : null;
