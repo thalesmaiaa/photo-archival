@@ -8,14 +8,14 @@ class ImageTypesTest {
     @Test
     void shouldMapValidImageType() {
         var mimeType = "jpg";
-        var imageType = ImageTypes.fromMimeType(mimeType);
+        var imageType = ImageTypes.fromImageExtension(mimeType);
         Assertions.assertThat(imageType).isEqualTo(ImageTypes.JPG);
     }
 
     @Test
     void shouldThrowExceptionForInvalidImageType() {
         var mimeType = "invalid";
-        Assertions.assertThatThrownBy(() -> ImageTypes.fromMimeType(mimeType))
+        Assertions.assertThatThrownBy(() -> ImageTypes.fromImageExtension(mimeType))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Unsupported image type: invalid");
     }
