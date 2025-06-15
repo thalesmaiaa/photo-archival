@@ -32,7 +32,7 @@ aws secretsmanager update-secret --secret-id <your-secret-id> --secret-string "$
 # Update Lambda function environment variable with the new API URL (replace with your function name)
 HOST=$(aws secretsmanager get-secret-value --secret-id <your-secret-id> --query 'SecretString' --output text | jq -r '.MONGODB_HOST')
 PORT=$(aws secretsmanager get-secret-value --secret-id <your-secret-id> --query 'SecretString' --output text | jq -r '.MONGODB_PORT')
-export FULL_URL="http://${HOST}:5000/api"
+export FULL_URL="http://${HOST}:5000"
 aws lambda update-function-configuration --function-name <your-lambda-function> --environment "Variables={API_URL=${FULL_URL}}" --query 'LastModified' --output text
 
 # Extract values from the secret JSON
@@ -61,4 +61,4 @@ aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --
 
 # Pull the latest Docker image and run the container (replace with your repository)
 docker pull <your-aws-account-id>.dkr.ecr.$AWS_REGION.amazonaws.com/<your-repo>:latest
-docker run -d --name photo_archival -p 5001:5000 --env-file env.list <your-aws-account-id>.dkr.ecr.$AWS_REGION.amazonaws.com/<your-repo>:latest
+docker run -d --name photo_archival -p 5000:5000 --env-file env.list <your-aws-account-id>.dkr.ecr.$AWS_REGION.amazonaws.com/<your-repo>:latest
