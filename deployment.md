@@ -34,7 +34,6 @@ on an EC2 instance using AWS EC2 Instance Connect.
      SSH access.
   4. **SSH into the EC2 instance** Access the instance using the SSH key and execute the deployment script.
 
-
 ## Required Secrets
 
 - `AWS_ASSUME_ROLE_ARN`: ARN of the IAM role to assume for AWS API access.
@@ -48,7 +47,7 @@ on an EC2 instance using AWS EC2 Instance Connect.
 
 ## Notes
 
-- The EC2 deployment script can be followed by the example on [this file](./github/run.example.sh).
+- The EC2 deployment script can be followed by the example on [this file](./run.example.sh).
 - Ensure that required secrets are set up in AWS Secrets Manager for ec2 instance access.
 - Using Instance Connect avoids storing permanent SSH keys in GitHub Secrets, improving security.
 - This is a simple deployment strategy which can results in some downtime during the deployment process. For production systems, consider implementing a more robust deployment strategy such as blue-green deployments or rolling updates to minimize downtime and ensure high availability.
