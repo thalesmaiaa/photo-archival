@@ -48,6 +48,7 @@ on an EC2 instance using AWS EC2 Instance Connect.
 
 ## Notes
 
-- The deployment script `/home/ec2-user/deploy.sh` must exist on the EC2 instance and be executable.
+- The EC2 deployment script can be followed by the example on [this file](run.example.sh).
+- Ensure that required secrets are set up in AWS Secrets Manager for ec2 instance access.
 - Using Instance Connect avoids storing permanent SSH keys in GitHub Secrets, improving security.
-- The workflow runs the deployment script with root privileges (`sudo`) to perform privileged operations if needed.
+- This is a simple deployment strategy which can results in some downtime during the deployment process. For production systems, consider implementing a more robust deployment strategy such as blue-green deployments or rolling updates to minimize downtime and ensure high availability.

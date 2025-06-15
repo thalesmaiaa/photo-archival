@@ -57,27 +57,22 @@ services:
 ## Installation and Usage
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/thalesmaiaa/photoarchival.git
-   ```
-2. Navigate to the project directory:
-   ```bash
    cd photoarchival
    ```
-3. Run Docker containers
+
+2. Run Docker containers
 
    ```bash
    docker compose up -d
    ```
 
-   4 . Build the project using Maven:
+   4 . Build and run the project using Maven:
 
    ```bash
    mvn clean install
-   ```
-
-4. Start the application:
-   ```bash
    mvn spring-boot:run -Dspring-boot.run.profiles=local
    ```
 
@@ -87,19 +82,4 @@ Don't forget to set up your MongoDB connection in the `application.yml` file.
 
 ## Contributing
 
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository.
-2. Create a new branch:
-   ```bash
-   git checkout -b feature-name
-   ```
-3. Commit your changes:
-   ```bash
-   git commit -m "Add feature-name"
-   ```
-4. Push to your branch:
-   ```bash
-   git push origin feature-name
-   ```
-5. Open a pull request.
+Contributions are welcome! Feel free to open a pull request orissue if you have suggestions or improvements.
