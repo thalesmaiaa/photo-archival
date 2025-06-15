@@ -18,25 +18,7 @@
 
 ---
 
-### 2. Get Media by ID
-
-- **GET** `/medias/{id}`
-- **Description:** Retrieve a media item by its unique ID.
-- **Response:**
-  ```json
-  {
-    "id": "string",
-    "fileName": "string",
-    "folderName": "string",
-    "url": "string",
-    "uploadedAt": "ISO8601 date",
-    "metadata": { ... }
-  }
-  ```
-
----
-
-### 3. List/Filter Medias
+### 2. List/Filter Medias
 
 - **GET** `/medias`
 - **Description:** List all media items, optionally filtered by query parameters.
@@ -74,14 +56,14 @@
 
 ---
 
-### 4. Update Media Metadata (endpoint called by AWS Lambda [Photo Archival Lambda](https://github.com/thalesmaiaa/photo-archival-lambda))
+### 3. Update Media Metadata (endpoint called by AWS Lambda [Photo Archival Lambda](https://github.com/thalesmaiaa/photo-archival-lambda))
 
 - **PATCH** `/medias/{requestFile}/metadata`
 - **Description:** Update metadata for a specific media file.
 - **Request Body:**
   ```json
   {
-    // Metadata fields to update
+    // Metadata fields provided by Amazon Rekognition face  and label detection analysis
   }
   ```
 - **Response:** `204 No Content`
