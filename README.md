@@ -54,6 +54,8 @@ services:
   - Matching photos are retrieved from the S3 bucket.
 - **Outcome**: Users can view and manage their photos efficiently.
 
+## **API DOCS [here](api.md)**
+
 ## Installation and Usage
 
 1. Clone the repository:
