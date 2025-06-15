@@ -32,8 +32,8 @@ on an EC2 instance using AWS EC2 Instance Connect.
   2. **Generate a temporary SSH key pair** dynamically during the workflow.
   3. **Push the SSH public key** to the EC2 instance using AWS EC2 Instance Connect API, allowing secure, temporary
      SSH access.
-  4. **SSH into the EC2 instance** using the temporary private key and execute the deployment script (`run.sh`) as
-     root via `sudo`.
+  4. **SSH into the EC2 instance** Access the instance using the SSH key and execute the deployment script.
+
 
 ## Required Secrets
 

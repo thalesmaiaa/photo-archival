@@ -1,5 +1,15 @@
 #!/bin/bash
 
+# stop previous containers running on port 5001, 5000
+docker stop photo_archival
+docker rm photo_archival
+
+# Ensure Docker is running
+if ! systemctl is-active --quiet docker; then
+    echo "Docker is not running. Starting Docker..."
+    sudo systemctl start docker
+fi
+
 # Remove previous environment file
 rm -rf env.list
 
