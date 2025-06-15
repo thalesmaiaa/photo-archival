@@ -75,6 +75,7 @@ services:
    mvn clean install
    mvn spring-boot:run -Dspring-boot.run.profiles=local
    ```
+
 ## More details about CI/CD [here](deployment.md)
 
 ## Contributing
