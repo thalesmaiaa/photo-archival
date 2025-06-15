@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Validated
 @RestController
-@RequestMapping("/api/media")
+@RequestMapping("/medias")
 public class MediaController {
 
     private final MediaService mediaService;
