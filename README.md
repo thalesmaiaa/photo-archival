@@ -75,9 +75,6 @@ services:
    mvn clean install
    mvn spring-boot:run -Dspring-boot.run.profiles=local
    ```
-
-Don't forget to set up your MongoDB connection in the `application.yml` file.
-
 ## More details about CI/CD [here](deployment.md)
 
 ## Contributing
