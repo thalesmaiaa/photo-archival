@@ -60,7 +60,7 @@ services:
 
    ```bash
    git clone https://github.com/thalesmaiaa/photo-archival.git
-   cd photoarchival
+   cd photo-archival
    ```
 
 2. Run Docker containers
