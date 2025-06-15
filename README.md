@@ -59,7 +59,7 @@ services:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/thalesmaiaa/photoarchival.git
+   git clone https://github.com/thalesmaiaa/photo-archival.git
    cd photoarchival
    ```
 
