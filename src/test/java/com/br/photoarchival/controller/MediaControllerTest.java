@@ -22,7 +22,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
-import java.util.UUID;
 
 @ExtendWith(MockitoExtension.class)
 class MediaControllerTest {
@@ -44,19 +43,6 @@ class MediaControllerTest {
         mediaController.uploadMedia(request);
 
         Mockito.verify(mediaService).uploadFile(mediaModel);
-    }
-
-    @Test
-    void shouldGetMedia() {
-        var mediaId = UUID.randomUUID().toString();
-        var mediaEntity = new MediaEntity("folder", "fileName", "file");
-        var mockedResponse = mediaMapper.toMediaResponse(mediaEntity);
-        Mockito.when(mediaService.findById(mediaId)).thenReturn(mediaEntity);
-
-        var response = mediaController.getMedia(mediaId);
-
-        Mockito.verify(mediaService).findById(mediaId);
-        Assertions.assertThat(response).isEqualTo(mockedResponse);
     }
 
     @Test
@@ -86,6 +72,4 @@ class MediaControllerTest {
         Mockito.verify(mediaService).findAllMedias(filtersRequest, pageable);
         Assertions.assertThat(response).containsExactly(mockedResponse);
     }
-
-
 }

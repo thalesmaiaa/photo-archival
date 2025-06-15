@@ -32,13 +32,7 @@ public class MediaController {
     public void uploadMedia(@RequestBody @Valid UploadFileRequest request) {
         mediaService.uploadFile(mediaMapper.toMediaModel(request));
     }
-
-    @GetMapping("/{id}")
-    public MediaResponse getMedia(@PathVariable String id) {
-        var media = mediaService.findById(id);
-        return mediaMapper.toMediaResponse(media);
-    }
-
+    
     @GetMapping
     public Page<MediaResponse> findAllMedias(@ModelAttribute MediaFiltersRequest filtersRequest, Pageable pageable) {
         return mediaService.findAllMedias(filtersRequest, pageable).map(mediaMapper::toMediaResponse);

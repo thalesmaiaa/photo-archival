@@ -7,7 +7,6 @@ import com.br.photoarchival.domain.model.MediaModel;
 import com.br.photoarchival.domain.model.MetadataModel;
 import com.br.photoarchival.dto.request.MediaFiltersRequest;
 import com.br.photoarchival.exception.InvalidFileException;
-import com.br.photoarchival.exception.MediaNotFoundException;
 import com.br.photoarchival.repository.MediaRepository;
 import com.br.photoarchival.utils.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -72,10 +71,6 @@ public class MediaService {
         media.setUrl(fileUrl);
         media.setUploadedAt(new Date());
         mediaRepository.save(media);
-    }
-
-    public MediaEntity findById(String id) {
-        return mediaRepository.findById(id).orElseThrow(MediaNotFoundException::new);
     }
 
     public Page<MediaEntity> findAllMedias(MediaFiltersRequest filters, Pageable pageable) {

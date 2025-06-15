@@ -30,7 +30,6 @@ import java.nio.file.Files;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -84,19 +83,6 @@ class MediaServiceTest {
 
         Assertions.assertThatThrownBy(() -> mediaService.uploadFile(mediaModel)).isInstanceOf(InvalidFileException.class)
                 .hasMessageContaining("Your request contains an invalid file");
-    }
-
-    @Test
-    void shouldFindById() {
-        var mediaId = UUID.randomUUID().toString();
-        var mediaEntity = new MediaEntity();
-
-        when(mediaRepository.findById(mediaId)).thenReturn(Optional.of(mediaEntity));
-
-        var result = mediaService.findById(mediaId);
-
-        Assertions.assertThat(mediaEntity).isEqualTo(result);
-        verify(mediaRepository).findById(mediaId);
     }
 
     @Test
