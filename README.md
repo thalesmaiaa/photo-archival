@@ -59,8 +59,8 @@ services:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/thalesmaiaa/photoarchival.git
-   cd photoarchival
+   git clone https://github.com/thalesmaiaa/photo-archival.git
+   cd photo-archival
    ```
 
 2. Run Docker containers
@@ -75,9 +75,6 @@ services:
    mvn clean install
    mvn spring-boot:run -Dspring-boot.run.profiles=local
    ```
-
-Don't forget to set up your MongoDB connection in the `application.yml` file.
-
 ## More details about CI/CD [here](deployment.md)
 
 ## Contributing
